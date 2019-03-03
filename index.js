@@ -23,10 +23,10 @@ const elementWhitelist = new Set( [ "svg", "VIDEO", "PICTURE" ] );
 const defaultAttributeWhitelist = new Set( [ "name" ] );
 
 const attributeWhitelists = new Map( [
-	[ "A", [ "href" ] ],
+	[ "A",   [ "href" ] ],
 	[ "IMG", [ "src", "alt" ] ],
-	[ "TH", [ "colspan", "rowspan" ] ],
-	[ "TD", [ "colspan", "rowspan" ] ]
+	[ "TH",  [ "colspan", "rowspan" ] ],
+	[ "TD",  [ "colspan", "rowspan" ] ]
 ] );
 
 (function() {
@@ -39,14 +39,14 @@ const attributeWhitelists = new Map( [
 const collapsibleTags = new Set( [ "SPAN", "DIV" ] );
 
 const ELEMENT_NODE = 1;
-const TEXT_NODE = 3;
+const TEXT_NODE    = 3;
 
 function sanitize( rootNode ) {
 	let fringe = Array.from( rootNode.childNodes );
-
+	
 	do {
 		let node = fringe.pop();
-
+		
 		if( node.nodeType === TEXT_NODE || elementWhitelist.has( node.tagName ) ) {
 			continue;
 		}
@@ -54,7 +54,7 @@ function sanitize( rootNode ) {
 			removeNode( node );
 			continue;
 		}
-
+		
 		const childNodes = Array.from( node.childNodes );
 		
 		if( childNodes.length === 0 && node.tagName !== "IMG" ) {
@@ -63,19 +63,19 @@ function sanitize( rootNode ) {
 		}
 		
 		fringe = fringe.concat( childNodes );
-
+		
 		if( collapsibleTags.has( node.tagName ) ) {
 			childNodes.forEach( child => node.parentNode.insertBefore( child, node ) );
 			removeNode( node );
 			continue;
 		}
-
+		
 		let attributeWhitelist = attributeWhitelists.get( node.tagName );
 		
 		if( attributeWhitelist === undefined ) {
 			attributeWhitelist = defaultAttributeWhitelist;
 		}
-
+		
 		for( const attribute of Array.from( node.attributes || [] ) ) {
 			if( !attributeWhitelist.has( attribute.localName ) ) {
 				node.removeAttribute( attribute.name );
