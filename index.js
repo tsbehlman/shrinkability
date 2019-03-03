@@ -20,12 +20,21 @@ module.exports = function( html, sourceURL ) {
 
 const tagWhitelist = new Set( [ "svg", "VIDEO", "PICTURE" ] );
 
-const attributeWhitelist = new Map( [
-	[ "A", new Set( [ "href" ] ) ],
-	[ "IMG", new Set( [ "src" ] ) ],
-	[ "TH", new Set( [ "colspan", "rowspan" ] ) ],
-	[ "TD", new Set( [ "colspan", "rowspan" ] ) ]
+const defaultAttributeWhitelist = new Set( [ "name" ] );
+
+const attributeWhitelists = new Map( [
+	[ "A", [ "href" ] ],
+	[ "IMG", [ "src", "alt" ] ],
+	[ "TH", [ "colspan", "rowspan" ] ],
+	[ "TD", [ "colspan", "rowspan" ] ]
 ] );
+
+(function() {
+	const defaultAttributes = Array.from( defaultAttributeWhitelist );
+	for( const [ tagName, attributes ] of attributeWhitelists ) {
+		attributeWhitelists.set( tagName, new Set( defaultAttributes.concat( attributes ) ) );
+	}
+})();
 
 const collapsibleTags = new Set( [ "SPAN", "DIV" ] );
 
@@ -55,10 +64,14 @@ function sanitize( rootNode ) {
 			continue;
 		}
 
-		const whitelist = attributeWhitelist.get( node.tagName );
+		let attributeWhitelist = attributeWhitelists.get( node.tagName );
+		
+		if( attributeWhitelist === undefined ) {
+			attributeWhitelist = defaultAttributeWhitelist;
+		}
 
 		for( const attribute of Array.from( node.attributes || [] ) ) {
-			if( whitelist === undefined || !whitelist.has( attribute.localName ) ) {
+			if( !attributeWhitelist.has( attribute.localName ) ) {
 				node.removeAttribute( attribute.name );
 			}
 		}
