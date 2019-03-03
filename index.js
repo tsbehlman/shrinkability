@@ -62,7 +62,7 @@ function sanitize( rootNode ) {
 			continue;
 		}
 		
-		fringe = [ ...fringe, ...childNodes ];
+		fringe = fringe.concat( childNodes );
 
 		if( collapsibleTags.has( node.tagName ) ) {
 			childNodes.forEach( child => node.parentNode.insertBefore( child, node ) );
