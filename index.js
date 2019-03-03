@@ -18,7 +18,7 @@ module.exports = function( html, sourceURL ) {
 	}
 }
 
-const tagWhitelist = new Set( [ "svg", "VIDEO", "PICTURE" ] );
+const elementWhitelist = new Set( [ "svg", "VIDEO", "PICTURE" ] );
 
 const defaultAttributeWhitelist = new Set( [ "name" ] );
 
@@ -47,7 +47,7 @@ function sanitize( rootNode ) {
 	do {
 		let node = fringe.pop();
 
-		if( node.nodeType === TEXT_NODE || tagWhitelist.has( node.tagName ) ) {
+		if( node.nodeType === TEXT_NODE || elementWhitelist.has( node.tagName ) ) {
 			continue;
 		}
 		if( node.nodeType !== ELEMENT_NODE ) {
@@ -56,6 +56,12 @@ function sanitize( rootNode ) {
 		}
 
 		const childNodes = Array.from( node.childNodes );
+		
+		if( childNodes.length === 0 && node.tagName !== "IMG" ) {
+			removeNode( node );
+			continue;
+		}
+		
 		fringe = [ ...fringe, ...childNodes ];
 
 		if( collapsibleTags.has( node.tagName ) ) {
