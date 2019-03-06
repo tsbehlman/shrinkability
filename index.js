@@ -9,9 +9,7 @@ module.exports = function( html, sourceURL ) {
 			url: sourceURL,
 			virtualConsole
 		} );
-		const readable = new Readability( dom.window.document ).parse();
-		readable.content = readable.content.replace( /\s\s+/g, " " );
-		return readable;
+		return new Readability( dom.window.document ).parse();
 	}
 	finally {
 		dom.window.close();
@@ -44,10 +42,20 @@ const TEXT_NODE    = 3;
 function sanitize( rootNode ) {
 	let fringe = Array.from( rootNode.childNodes );
 	
+	let preDescendantCounter = 0;
+	
 	do {
+		const nodeIsWithinPre = preDescendantCounter > 0;
+		preDescendantCounter--;
 		let node = fringe.pop();
 		
-		if( node.nodeType === TEXT_NODE || elementWhitelist.has( node.tagName ) ) {
+		if( node.nodeType === TEXT_NODE ) {
+			if( !nodeIsWithinPre ) {
+				node.nodeValue = node.nodeValue.replace( /\s\s+/g, " " );
+			}
+			continue;
+		}
+		else if( elementWhitelist.has( node.tagName ) ) {
 			continue;
 		}
 		if( node.nodeType !== ELEMENT_NODE ) {
@@ -62,9 +70,16 @@ function sanitize( rootNode ) {
 			continue;
 		}
 		
+		if( preDescendantCounter >= 0 ) {
+			preDescendantCounter += childNodes.length;
+		}
+		else if( node.tagName === "PRE" ) {
+			preDescendantCounter = childNodes.length;
+		}
+		
 		fringe = fringe.concat( childNodes );
 		
-		if( collapsibleTags.has( node.tagName ) ) {
+		if( nodeIsWithinPre || collapsibleTags.has( node.tagName ) ) {
 			childNodes.forEach( child => node.parentNode.insertBefore( child, node ) );
 			removeNode( node );
 			continue;
