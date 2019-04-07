@@ -12,7 +12,7 @@
   "author": "Trevor Behlman",
   "license": "MIT",
   "dependencies": {
-    "jsdom": "^13.2.0",
+    "jsdom": "^14.0.0",
     "moz-readability-node": "^0.2.4"
   },
   "devDependencies": {
