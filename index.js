@@ -9,6 +9,7 @@ module.exports = function( html, sourceURL ) {
 			url: sourceURL,
 			virtualConsole
 		} );
+		Readability.prototype._cleanClasses = makeSanitizeFunction( dom.window.document );
 		return new Readability( dom.window.document ).parse();
 	}
 	finally {
@@ -39,7 +40,7 @@ const collapsibleTags = new Set( [ "SPAN", "DIV" ] );
 const ELEMENT_NODE = 1;
 const TEXT_NODE    = 3;
 
-function sanitize( rootNode ) {
+const makeSanitizeFunction = document => rootNode => {
 	let fringe = Array.from( rootNode.childNodes );
 	
 	let preDescendantCounter = 0;
@@ -65,12 +66,18 @@ function sanitize( rootNode ) {
 		
 		const childNodes = Array.from( node.childNodes );
 		
+		if( nodeIsWithinPre && node.tagName === "BR" ) {
+			node.parentNode.insertBefore( document.createTextNode( "\n" ), node );
+			removeNode( node );
+			continue;
+		}
+		
 		if( childNodes.length === 0 && node.tagName !== "IMG" ) {
 			removeNode( node );
 			continue;
 		}
 		
-		if( preDescendantCounter >= 0 ) {
+		if( nodeIsWithinPre ) {
 			preDescendantCounter += childNodes.length;
 		}
 		else if( node.tagName === "PRE" ) {
@@ -97,7 +104,7 @@ function sanitize( rootNode ) {
 			}
 		}
 	} while( fringe.length > 0 );
-}
+};
 
 function removeNode( node ) {
 	let parent = node.parentNode;
@@ -111,7 +118,6 @@ function removeNode( node ) {
 	} while( parent !== null );
 }
 
-Readability.prototype._cleanClasses = sanitize;
 Readability.prototype.REGEXPS.unlikelyCandidates = new RegExp(
 	Readability.prototype.REGEXPS.unlikelyCandidates.source + "|featured|trending",
 	Readability.prototype.REGEXPS.unlikelyCandidates.flags
