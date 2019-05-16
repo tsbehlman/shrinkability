@@ -23,7 +23,7 @@ const defaultAttributeWhitelist = new Set( [ "name" ] );
 
 const attributeWhitelists = new Map( [
 	[ "A",   [ "href" ] ],
-	[ "IMG", [ "src", "alt" ] ],
+	[ "IMG", [ "src", "alt", "srcset", "sizes" ] ],
 	[ "TH",  [ "colspan", "rowspan" ] ],
 	[ "TD",  [ "colspan", "rowspan" ] ]
 ] );
