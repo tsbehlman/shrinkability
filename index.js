@@ -64,13 +64,15 @@ const makeSanitizeFunction = document => rootNode => {
 			continue;
 		}
 		
-		const childNodes = Array.from( node.childNodes );
-		
-		if( nodeIsWithinPre && node.tagName === "BR" ) {
-			node.parentNode.insertBefore( document.createTextNode( "\n" ), node );
-			removeNode( node );
+		if( node.tagName === "BR" ) {
+			if( nodeIsWithinPre ) {
+				node.parentNode.insertBefore( document.createTextNode( "\n" ), node );
+				removeNode( node );
+			}
 			continue;
 		}
+		
+		const childNodes = Array.from( node.childNodes );
 		
 		if( childNodes.length === 0 && node.tagName !== "IMG" ) {
 			removeNode( node );
